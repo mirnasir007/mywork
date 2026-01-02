@@ -79,7 +79,8 @@
         </div>
 
         <div class="flex-1 bg-gray-200 relative w-full h-full">
-            <iframe id="content-frame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+            <!-- Added 'allow-downloads' and 'allow-popups-to-escape-sandbox' to fix download issues -->
+            <iframe id="content-frame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation allow-downloads allow-popups-to-escape-sandbox"></iframe>
             
             <div id="welcome-msg" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                 <i class="fa-solid fa-earth-americas text-6xl mb-4 text-gray-300"></i>
