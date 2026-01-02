@@ -23,15 +23,15 @@
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        /* --- SWINGING GAMEPAD ANIMATION --- */
+        /* --- SWINGING BOY ANIMATION --- */
         @keyframes swing {
-            0% { transform: rotate(10deg); }
-            50% { transform: rotate(-10deg); }
-            100% { transform: rotate(10deg); }
+            0% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            100% { transform: rotate(15deg); }
         }
         .swing-container {
             transform-origin: top center;
-            animation: swing 3s infinite ease-in-out;
+            animation: swing 2.8s infinite ease-in-out;
         }
     </style>
 </head>
@@ -93,21 +93,45 @@
             <!-- Updated iframe with Zoom logic: Scale 0.8 (80%) and Width/Height 125% to compensate -->
             <iframe id="content-frame" class="border-0" style="width: 125%; height: 125%; transform: scale(0.8); transform-origin: 0 0;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation allow-downloads allow-popups-to-escape-sandbox"></iframe>
             
-            <!-- SWINGING GAMEPAD WELCOME MESSAGE -->
+            <!-- SWINGING BOY SILHOUETTE WELCOME MESSAGE -->
             <div id="welcome-msg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <!-- Swinging Element Container -->
-                <div class="swing-container flex flex-col items-center">
-                    <!-- The Cord/String -->
-                    <div class="w-1 h-32 bg-gray-400 rounded-t shadow-sm"></div>
-                    <!-- The Gamepad -->
-                    <div class="bg-white p-4 rounded-3xl shadow-lg border-4 border-gray-100 -mt-1 z-10">
-                        <i class="fa-solid fa-gamepad text-6xl text-indigo-500 drop-shadow-md"></i>
+                
+                <!-- Swing Container -->
+                <div class="swing-container relative w-40 h-64 mb-4">
+                    <!-- Ropes (SVG Line) -->
+                    <svg class="absolute top-0 left-0 w-full h-full z-0" viewBox="0 0 100 160">
+                         <!-- Left Rope -->
+                         <line x1="20" y1="0" x2="35" y2="120" stroke="#8B4513" stroke-width="1.5" />
+                         <!-- Right Rope -->
+                         <line x1="80" y1="0" x2="65" y2="120" stroke="#8B4513" stroke-width="1.5" />
+                    </svg>
+
+                    <!-- The Realistic Boy Silhouette (SVG) -->
+                    <div class="absolute top-[95px] left-1/2 transform -translate-x-1/2 z-10 w-24 h-32">
+                        <svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg" fill="#4B5563">
+                            <!-- Seat -->
+                            <rect x="15" y="85" width="70" height="8" rx="2" fill="#DC2626" />
+                            
+                            <!-- Legs hanging down -->
+                            <path d="M45 85 Q 50 110 55 125 Q 60 135 75 130" stroke="#4B5563" stroke-width="14" fill="none" stroke-linecap="round"/>
+                            <path d="M35 85 Q 40 110 40 125 Q 45 135 60 135" stroke="#4B5563" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.8"/>
+
+                            <!-- Body -->
+                            <path d="M40 85 Q 35 60 45 40" stroke="#4B5563" stroke-width="18" fill="none" stroke-linecap="round"/>
+                            
+                            <!-- Head -->
+                            <circle cx="48" cy="25" r="14" />
+
+                            <!-- Arms holding ropes -->
+                            <path d="M45 55 Q 30 70 25 80" stroke="#4B5563" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <path d="M50 55 Q 65 70 70 80" stroke="#4B5563" stroke-width="6" fill="none" stroke-linecap="round"/>
+                        </svg>
                     </div>
                 </div>
                 
                 <div class="mt-8 text-center px-4">
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-600 mb-2 font-mono tracking-tight">READY PLAYER ONE?</h2>
-                    <p class="text-gray-500 font-medium">Select a Level from the Menu to Start</p>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-600 mb-2 tracking-tight">Welcome!</h2>
+                    <p class="text-gray-500 font-medium">Please select a menu to start exploring</p>
                 </div>
             </div>
         </div>
