@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Work </title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+        
+        /* Sidebar Transition */
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        
+        /* Fade In Animation */
+        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+
+    <!-- Universal Overlay (Both Mobile & Desktop) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden glass"></div>
+
+    <!-- Sidebar (Narrower w-52, Fixed for all devices) -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 w-52 bg-white shadow-xl flex flex-col z-50 transform -translate-x-full sidebar-transition flex-shrink-0">
+        
+        <div class="p-4 flex justify-between items-center border-b bg-gray-50 h-14">
+            <h1 class="font-bold text-gray-700 text-lg"><i class="fa-solid fa-link mr-2 text-blue-600"></i>Menus</h1>
+            <!-- Close button inside sidebar -->
+            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-red-500 text-lg focus:outline-none">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-2 space-y-2" id="menu-list">
+            <div class="flex justify-center mt-10" id="loading-spinner">
+                <div class="loader"></div>
+            </div>
+        </div>
+
+        <div class="p-3 border-t bg-gray-50 relative">
+            <div id="settings-popup" class="hidden absolute bottom-14 left-2 w-48 bg-white shadow-xl rounded-lg border border-gray-200 overflow-hidden z-50">
+                <button onclick="openFormModal('add')" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center border-b border-gray-100">
+                    <div class="w-8 text-center"><i class="fa-solid fa-plus text-blue-500"></i></div>
+                    <span class="font-medium">Add Menu</span>
+                </button>
+                <button onclick="openManageModal()" class="w-full text-left px-4 py-3 hover:bg-gray-50 text-gray-700 flex items-center">
+                    <div class="w-8 text-center"><i class="fa-solid fa-list-ul text-green-500"></i></div>
+                    <span class="font-medium">Edit / Delete</span>
+                </button>
+            </div>
+            <button onclick="toggleSettingsMenu()" class="w-10 h-10 flex justify-center items-center text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition duration-200" title="Settings">
+                <i class="fa-solid fa-gear text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col h-full relative w-full overflow-hidden">
+        <div class="h-14 bg-white shadow-sm flex items-center px-4 justify-between border-b z-30 flex-shrink-0">
+            <div class="flex items-center">
+                <!-- Universal Sidebar Toggle Button (Visible on all devices) -->
+                <button onclick="toggleSidebar()" class="mr-4 text-gray-700 hover:text-blue-600 text-xl px-2">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <span id="current-page-title" class="font-semibold text-gray-700 truncate text-sm md:text-base">Select a menu</span>
+            </div>
+            <a id="external-link-btn" href="#" target="_blank" class="hidden text-xs bg-blue-100 text-blue-600 px-3 py-1.5 rounded hover:bg-blue-200 transition font-medium">
+                Open <i class="fa-solid fa-external-link-alt ml-1"></i>
+            </a>
+        </div>
+
+        <div class="flex-1 bg-gray-200 relative w-full h-full">
+            <iframe id="content-frame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+            
+            <div id="welcome-msg" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                <i class="fa-solid fa-earth-americas text-6xl mb-4 text-gray-300"></i>
+                <p class="text-lg font-medium">Please select a link from the menu</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT FORM MODAL -->
+    <div id="form-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md animate-fade-in">
+            <div class="px-6 py-4 bg-blue-600 text-white flex justify-between items-center rounded-t-xl">
+                <h3 class="text-lg font-bold" id="form-modal-title">Add Menu</h3>
+                <button onclick="closeFormModal()" class="hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="edit-row-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input type="text" id="menu-name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="e.g. Google">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Link URL</label>
+                    <input type="url" id="menu-link" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://...">
+                </div>
+                <div class="flex items-center pt-2">
+                    <input id="open-new-tab" type="checkbox" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                    <label for="open-new-tab" class="ml-2 text-sm text-gray-700">Open in New Tab (External)</label>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-2 rounded-b-xl">
+                <button onclick="closeFormModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg">Cancel</button>
+                <button onclick="saveMenu()" id="save-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANAGE MODAL -->
+    <div id="manage-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm h-[80vh] flex flex-col animate-fade-in">
+            <div class="px-5 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
+                <h3 class="font-bold text-gray-700">Manage Menus</h3>
+                <button onclick="closeManageModal()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-lg"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto" id="manage-list-container"></div>
+        </div>
+    </div>
+
+    <!-- GLOBAL LOADER -->
+    <div id="global-loader" class="fixed inset-0 bg-black bg-opacity-40 hidden z-[100] flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
+            <div class="loader w-6 h-6 border-2"></div>
+            <span id="loader-text" class="text-gray-700 font-medium text-sm">Processing...</span>
+        </div>
+    </div>
+
+    <!-- NEW CUSTOM DIALOG (Alerts & Confirmations) -->
+    <div id="custom-dialog" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xs text-center animate-fade-in overflow-hidden">
+            <div class="p-6">
+                <!-- Icon Area -->
+                <div id="dialog-icon-container" class="mb-4">
+                    <!-- Icon will be injected here via JS -->
+                </div>
+                
+                <!-- Message -->
+                <h3 id="dialog-title" class="text-lg font-bold text-gray-800 mb-2"></h3>
+                <p id="dialog-message" class="text-gray-600 text-sm mb-6"></p>
+
+                <!-- Buttons -->
+                <div id="dialog-buttons" class="flex justify-center gap-3">
+                    <!-- Buttons injected via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ******************************************************
+        // এখানে আপনার নতুন ডিপ্লয়মেন্টের URL দিন
+        // ******************************************************
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqM-2jXnHzJeaot6GgSiUyEg5dmBSO6bKUPly777zNPjst4v6Ujp4Ia-BX2NBTaJ1n3g/exec"; 
+        
+        let allMenus = [];
+        let isEditMode = false;
+        let confirmCallback = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMenus();
+        });
+
+        // --- CUSTOM DIALOG SYSTEM ---
+        
+        function showDialog(type, message, callback = null) {
+            const dialog = document.getElementById('custom-dialog');
+            const iconContainer = document.getElementById('dialog-icon-container');
+            const titleEl = document.getElementById('dialog-title');
+            const msgEl = document.getElementById('dialog-message');
+            const btnContainer = document.getElementById('dialog-buttons');
+
+            dialog.classList.remove('hidden');
+            btnContainer.innerHTML = ''; // Clear previous buttons
+
+            if (type === 'success') {
+                iconContainer.innerHTML = '<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-500"><i class="fa-solid fa-check text-2xl"></i></div>';
+                titleEl.innerText = "Success";
+                msgEl.innerText = message;
+                
+                const btn = document.createElement('button');
+                btn.className = "px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 w-full font-medium transition";
+                btn.innerText = "OK";
+                btn.onclick = () => closeDialog();
+                btnContainer.appendChild(btn);
+
+            } else if (type === 'error') {
+                iconContainer.innerHTML = '<div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-500"><i class="fa-solid fa-triangle-exclamation text-2xl"></i></div>';
+                titleEl.innerText = "Error";
+                msgEl.innerText = message;
+                
+                const btn = document.createElement('button');
+                btn.className = "px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 w-full font-medium transition";
+                btn.innerText = "Close";
+                btn.onclick = () => closeDialog();
+                btnContainer.appendChild(btn);
+
+            } else if (type === 'confirm') {
+                iconContainer.innerHTML = '<div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto text-blue-500"><i class="fa-solid fa-question text-2xl"></i></div>';
+                titleEl.innerText = "Confirmation";
+                msgEl.innerText = message;
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = "px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition flex-1";
+                cancelBtn.innerText = "No";
+                cancelBtn.onclick = () => closeDialog();
+                
+                const okBtn = document.createElement('button');
+                okBtn.className = "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition flex-1";
+                okBtn.innerText = "Yes";
+                okBtn.onclick = () => {
+                    closeDialog();
+                    if(callback) callback();
+                };
+
+                btnContainer.appendChild(cancelBtn);
+                btnContainer.appendChild(okBtn);
+            }
+        }
+
+        function closeDialog() {
+            document.getElementById('custom-dialog').classList.add('hidden');
+        }
+
+        // --- API & DATA HANDLING ---
+
+        function fetchMenus() {
+            const listContainer = document.getElementById('menu-list');
+            if(allMenus.length === 0) listContainer.innerHTML = '<div class="flex justify-center mt-10"><div class="loader"></div></div>';
+
+            fetch(`${SCRIPT_URL}?action=read&t=${new Date().getTime()}`)
+                .then(res => res.json())
+                .then(json => {
+                    listContainer.innerHTML = '';
+                    if (json.status === 'success') {
+                        allMenus = json.data;
+                        renderSidebar(allMenus);
+                        if(!document.getElementById('manage-modal').classList.contains('hidden')) renderManageList();
+                    } else {
+                        listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Error loading data.</p>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Network Error.</p>';
+                });
+        }
+
+        function sendData(payload, successMsg) {
+            showLoader(true, "Saving...");
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                showLoader(false);
+                if(data.status === 'success') {
+                    showDialog('success', successMsg); 
+                    
+                    closeFormModal();
+                    if(payload.action === 'delete') {
+                        fetchMenus();
+                    } else {
+                        fetchMenus();
+                    }
+                } else {
+                    showDialog('error', "Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                showLoader(false);
+                console.error("Fetch Error (might be CORS):", err);
+                showDialog('error', "Request might have failed. Refreshing data...");
+                setTimeout(() => fetchMenus(), 1500);
+            });
+        }
+
+        // --- RENDERING ---
+
+        function renderSidebar(menus) {
+            const container = document.getElementById('menu-list');
+            container.innerHTML = '';
+            
+            if(menus.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 text-xs py-4">No menus found.<br>Click Gear icon to add.</div>';
+                return;
+            }
+
+            menus.forEach(menu => {
+                const isExternal = menu.link.endsWith('#external');
+                const cleanLink = isExternal ? menu.link.replace('#external', '') : menu.link;
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center p-2.5 mx-2 rounded-lg hover:bg-blue-50 cursor-pointer transition group';
+                div.onclick = () => {
+                    // ** UPDATED LOGIC FOR ALL DEVICES **
+                    // Close sidebar automatically when a menu item is clicked
+                    toggleSidebar();
+                    
+                    loadContent(cleanLink, menu.name, isExternal);
+                };
+                
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gray-100 text-blue-600 flex items-center justify-center mr-3 text-sm font-bold group-hover:bg-blue-100 transition">
+                        ${menu.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-700 truncate">${menu.name}</p>
+                    </div>
+                    ${isExternal ? '<i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400"></i>' : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderManageList() {
+            const container = document.getElementById('manage-list-container');
+            container.innerHTML = '';
+
+            if (allMenus.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-10 text-sm">List is empty.</p>';
+                return;
+            }
+
+            allMenus.forEach(menu => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50';
+                
+                const cleanLink = menu.link.replace('#external', '');
+                
+                item.innerHTML = `
+                    <div class="flex items-center min-w-0 mr-4">
+                        <div class="w-8 h-8 rounded bg-gray-200 text-gray-600 flex items-center justify-center mr-3 text-xs flex-shrink-0 font-bold">
+                             ${menu.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-medium text-gray-800 text-sm truncate">${menu.name}</div>
+                            <div class="text-xs text-gray-400 truncate w-32 md:w-48">${cleanLink}</div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2 flex-shrink-0">
+                        <button onclick="openFormModal('edit', ${menu.id})" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition flex items-center justify-center">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="deleteItem(${menu.id})" class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-600 hover:text-white transition flex items-center justify-center">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // --- ACTIONS ---
+
+        function loadContent(url, name, isExternal) {
+            document.getElementById('welcome-msg').style.display = 'none';
+            document.getElementById('current-page-title').innerText = name;
+            
+            const extBtn = document.getElementById('external-link-btn');
+            extBtn.href = url;
+            
+            if(isExternal) {
+                extBtn.classList.remove('hidden');
+                window.open(url, '_blank');
+            } else {
+                extBtn.classList.add('hidden');
+                document.getElementById('content-frame').src = url;
+            }
+        }
+
+        function saveMenu() {
+            const name = document.getElementById('menu-name').value.trim();
+            let link = document.getElementById('menu-link').value.trim();
+            const id = document.getElementById('edit-row-id').value;
+            const isExternal = document.getElementById('open-new-tab').checked;
+
+            if(!name || !link) return showDialog('error', "Please fill all fields");
+            
+            if(isExternal && !link.endsWith('#external')) link += '#external';
+            if(!isExternal) link = link.replace('#external', '');
+
+            const payload = {
+                action: isEditMode ? 'update' : 'add',
+                rowId: id,
+                name: name,
+                link: link
+            };
+
+            sendData(payload, isEditMode ? "Updated!" : "Added!");
+        }
+
+        function deleteItem(id) {
+            showDialog('confirm', "Are you sure you want to delete this menu?", () => {
+                const payload = {
+                    action: 'delete',
+                    rowId: id
+                };
+                sendData(payload, "Deleted!");
+            });
+        }
+
+        // --- UI TOGGLES ---
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settings-popup');
+            menu.classList.toggle('hidden');
+        }
+
+        function openFormModal(mode, id = null) {
+            document.getElementById('settings-popup').classList.add('hidden');
+            const modal = document.getElementById('form-modal');
+            const title = document.getElementById('form-modal-title');
+            
+            modal.classList.remove('hidden');
+            
+            if(mode === 'edit') {
+                isEditMode = true;
+                title.innerText = 'Edit Menu';
+                const item = allMenus.find(m => m.id === id);
+                document.getElementById('menu-name').value = item.name;
+                const isExt = item.link.endsWith('#external');
+                document.getElementById('menu-link').value = isExt ? item.link.replace('#external','') : item.link;
+                document.getElementById('open-new-tab').checked = isExt;
+                document.getElementById('edit-row-id').value = item.id;
+            } else {
+                isEditMode = false;
+                title.innerText = 'Add Menu';
+                document.getElementById('menu-name').value = '';
+                document.getElementById('menu-link').value = '';
+                document.getElementById('open-new-tab').checked = false;
+            }
+        }
+
+        function closeFormModal() {
+            document.getElementById('form-modal').classList.add('hidden');
+        }
+
+        function openManageModal() {
+            document.getElementById('settings-popup').classList.add('hidden');
+            renderManageList();
+            document.getElementById('manage-modal').classList.remove('hidden');
+        }
+
+        function closeManageModal() {
+            document.getElementById('manage-modal').classList.add('hidden');
+        }
+
+        function showLoader(show, text = "Loading...") {
+            const loader = document.getElementById('global-loader');
+            document.getElementById('loader-text').innerText = text;
+            if(show) loader.classList.remove('hidden');
+            else loader.classList.add('hidden');
+        }
+
+        // Close Popups on Outside Click
+        window.onclick = function(event) {
+            const setMenu = document.getElementById('settings-popup');
+            const setBtn = document.querySelector('button[title="Settings"]');
+            if (!setMenu.classList.contains('hidden') && !setMenu.contains(event.target) && !setBtn.contains(event.target)) {
+                setMenu.classList.add('hidden');
+            }
+            const dialog = document.getElementById('custom-dialog');
+            if (!dialog.classList.contains('hidden') && event.target === dialog) {
+                 // Optional: close on outside click
+            }
+        }
+    </script>
+</body>
+</html>
