@@ -71,7 +71,7 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden glass"></div>
 
-    <div id="sidebar" onmouseleave="closeSidebarHover()" class="fixed inset-y-0 left-0 w-52 bg-white shadow-xl flex flex-col z-50 transform -translate-x-full sidebar-transition flex-shrink-0">
+    <div id="sidebar" onmouseenter="openSidebarHover()" onmouseleave="closeSidebarHover()" class="fixed inset-y-0 left-0 w-52 bg-white shadow-xl flex flex-col z-50 transform -translate-x-full sidebar-transition flex-shrink-0">
         
         <div class="p-4 flex justify-between items-center border-b bg-gray-50 h-14">
             <h1 class="font-bold text-gray-700 text-lg"><i class="fa-solid fa-link mr-2 text-blue-600"></i>Menus</h1>
@@ -105,7 +105,7 @@
 
     <div class="flex-1 flex flex-col h-full relative w-full overflow-hidden">
         
-        <div id="hover-trigger" class="fixed inset-y-0 left-0 w-8 z-40 hidden" onmouseenter="openSidebarHover()"></div>
+        <div id="hover-trigger" class="fixed inset-y-0 left-0 w-12 z-40 hidden" onmouseenter="openSidebarHover()" onmouseleave="closeSidebarHover()"></div>
 
         <button id="floating-menu-btn" onclick="toggleSidebar()" class="hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white/80 backdrop-blur-md shadow-md border border-gray-200 rounded text-gray-700 hover:text-blue-600 flex items-center justify-center transition-all">
             <i class="fa-solid fa-bars text-lg"></i>
@@ -444,16 +444,21 @@
             }
         }
 
-        // New functions for Desktop Hover effect
+// New functions for Desktop Hover effect with smooth transition delay
+        let hoverTimeout;
+
         function openSidebarHover() {
             if(isFullscreenMode && window.innerWidth >= 768) {
+                clearTimeout(hoverTimeout);
                 document.getElementById('sidebar').classList.remove('-translate-x-full');
             }
         }
 
         function closeSidebarHover() {
             if(isFullscreenMode && window.innerWidth >= 768) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
+                hoverTimeout = setTimeout(() => {
+                    document.getElementById('sidebar').classList.add('-translate-x-full');
+                }, 400); // 400 milliseconds delay before closing
             }
         }
 
