@@ -306,6 +306,9 @@
                         allMenus = json.data;
                         renderSidebar(allMenus);
                         if(!document.getElementById('manage-modal').classList.contains('hidden')) renderManageList();
+                        
+                        // Check URL hash and load specific menu automatically
+                        checkHashAndLoadMenu();
                     } else {
                         listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Error loading data.</p>';
                     }
@@ -315,7 +318,21 @@
                     listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Network Error.</p>';
                 });
         }
-
+// URL Hash চেকার ফাংশন
+        function checkHashAndLoadMenu() {
+            const hash = window.location.hash.substring(1); // Remove the '#'
+            if (hash && allMenus.length > 0) {
+                // Find matching menu by checking formatted name
+                const targetMenu = allMenus.find(m => m.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === hash);
+                
+                if (targetMenu) {
+                    const isExternal = targetMenu.link.endsWith('#external');
+                    const cleanLink = isExternal ? targetMenu.link.replace('#external', '') : targetMenu.link;
+                    // Load content but skip updating the URL again
+                    loadContent(cleanLink, targetMenu.name, isExternal, true);
+                }
+            }
+        }
         function sendData(payload, successMsg) {
             showLoader(true, "Saving...");
             
@@ -418,12 +435,18 @@
             });
         }
 
-        function loadContent(url, name, isExternal) {
+        function loadContent(url, name, isExternal, skipUrlUpdate = false) {
             document.getElementById('welcome-msg').style.display = 'none';
             document.getElementById('current-page-title').innerText = name;
             
             const extBtn = document.getElementById('external-link-btn');
             extBtn.href = url;
+            
+            // Update URL Hash automatically (e.g., #orders)
+            if (!skipUrlUpdate) {
+                const safeHash = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                window.history.pushState(null, null, '#' + safeHash);
+            }
             
             if(isExternal) {
                 extBtn.classList.remove('hidden');
