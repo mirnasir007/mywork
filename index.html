@@ -307,8 +307,8 @@
                         renderSidebar(allMenus);
                         if(!document.getElementById('manage-modal').classList.contains('hidden')) renderManageList();
                         
-                        // Check URL hash and load specific menu automatically
-                        checkHashAndLoadMenu();
+                        // NEW: 404 Redirect Check for Clean URLs
+                        handleCleanUrlRedirect();
                     } else {
                         listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Error loading data.</p>';
                     }
@@ -318,21 +318,37 @@
                     listContainer.innerHTML = '<p class="text-red-500 text-center text-sm p-4">Network Error.</p>';
                 });
         }
-// URL Hash চেকার ফাংশন
-        function checkHashAndLoadMenu() {
-            const hash = window.location.hash.substring(1); // Remove the '#'
-            if (hash && allMenus.length > 0) {
-                // Find matching menu by checking formatted name
-                const targetMenu = allMenus.find(m => m.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === hash);
+
+        // NEW: Handle Clean URL Redirects (404 Trick)
+        function handleCleanUrlRedirect() {
+            let pathName = window.location.pathname;
+            
+            // If user came from 404.html, restore the clean URL
+            if (sessionStorage.redirect) {
+                const redirectUrl = sessionStorage.redirect;
+                delete sessionStorage.redirect;
+                window.history.replaceState(null, null, redirectUrl);
+                pathName = new URL(redirectUrl).pathname;
+            }
+
+            // Extract path part like "sales-report"
+            const pathParts = pathName.split('/').filter(p => p);
+            
+            if (pathParts.length > 1 && pathParts[0] === 'mywork') {
+                const targetPath = pathParts[1]; 
+                
+                // Find correct menu from allMenus
+                const targetMenu = allMenus.find(m => m.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === targetPath);
                 
                 if (targetMenu) {
                     const isExternal = targetMenu.link.endsWith('#external');
                     const cleanLink = isExternal ? targetMenu.link.replace('#external', '') : targetMenu.link;
-                    // Load content but skip updating the URL again
-                    loadContent(cleanLink, targetMenu.name, isExternal, true);
+                    // Load that menu (true means don't push URL again)
+                    loadContent(cleanLink, targetMenu.name, isExternal, true); 
                 }
             }
         }
+
         function sendData(payload, successMsg) {
             showLoader(true, "Saving...");
             
@@ -442,10 +458,10 @@
             const extBtn = document.getElementById('external-link-btn');
             extBtn.href = url;
             
-            // Update URL Hash automatically (e.g., #orders)
+            // NEW: Clean URL Update (e.g. /mywork/sales-report)
             if (!skipUrlUpdate) {
-                const safeHash = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                window.history.pushState(null, null, '#' + safeHash);
+                const cleanPath = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                window.history.pushState(null, null, '/mywork/' + cleanPath);
             }
             
             if(isExternal) {
@@ -467,7 +483,7 @@
             }
         }
 
-// New functions for Desktop Hover effect with smooth transition delay
+        // New functions for Desktop Hover effect with smooth transition delay
         let hoverTimeout;
 
         function openSidebarHover() {
