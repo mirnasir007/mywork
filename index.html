@@ -25,30 +25,21 @@
 
         /* --- OFFICE WORKER ANIMATION KEYFRAMES --- */
         
-        /* Cycle Duration: 8 seconds
-           0-4s: Working
-           4-7s: Tired/Sleeping
-           7-7.5s: Shock/Jump
-           7.5-8s: Back to normal
-        */
-
         /* Head Animation */
         @keyframes head-cycle {
-            0%, 45% { transform: rotate(0deg) translateY(0); } /* Working */
-            50%, 80% { transform: rotate(15deg) translateY(5px); } /* Tired/Sleep */
-            82% { transform: rotate(-10deg) translateY(-10px); } /* Jump/Shock */
-            90%, 100% { transform: rotate(0deg) translateY(0); } /* Back */
+            0%, 45% { transform: rotate(0deg) translateY(0); }
+            50%, 80% { transform: rotate(15deg) translateY(5px); }
+            82% { transform: rotate(-10deg) translateY(-10px); }
+            90%, 100% { transform: rotate(0deg) translateY(0); }
         }
 
-        /* Arm Animation (Typing -> Stop -> Shock -> Type) */
+        /* Arm Animation */
         @keyframes arm-cycle {
             0%, 45% { transform: rotate(0deg); animation-timing-function: steps(5); transform-origin: 100% 0; }
-            /* Rapid typing jiggle handled by sub-animation or rough steps here, simplified: */
             0%, 5%, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45% { transform: rotate(2deg); }
             2.5%, 7.5%, 12.5%, 17.5%, 22.5%, 27.5%, 32.5%, 37.5%, 42.5% { transform: rotate(-2deg); }
-            
-            50%, 80% { transform: rotate(15deg) translateY(5px); } /* Arms down/tired */
-            82% { transform: rotate(-20deg) translateY(-10px); } /* Hands up in shock */
+            50%, 80% { transform: rotate(15deg) translateY(5px); }
+            82% { transform: rotate(-20deg) translateY(-10px); }
             90%, 100% { transform: rotate(0deg); }
         }
 
@@ -62,11 +53,11 @@
             100% { opacity: 0; }
         }
 
-        /* Eye Animation (Blink -> Closed -> Open Wide) */
+        /* Eye Animation */
         @keyframes eye-cycle {
-            0%, 45% { rx: 1.5; ry: 1.5; } /* Open */
-            48%, 80% { rx: 2; ry: 0.2; } /* Closed (Tired) */
-            82% { rx: 3; ry: 3; } /* Wide Open (Shock) */
+            0%, 45% { rx: 1.5; ry: 1.5; }
+            48%, 80% { rx: 2; ry: 0.2; }
+            82% { rx: 3; ry: 3; }
             90%, 100% { rx: 1.5; ry: 1.5; }
         }
 
@@ -74,20 +65,16 @@
         .worker-arm { transform-origin: 45px 55px; animation: arm-cycle 8s infinite ease-in-out; }
         .worker-zzz { transform-origin: 60px 20px; animation: zzz-cycle 8s infinite ease-in-out; }
         .worker-eye { animation: eye-cycle 8s infinite; }
-
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex overflow-hidden">
 
-    <!-- Universal Overlay (Both Mobile & Desktop) -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden glass"></div>
 
-    <!-- Sidebar (Narrower w-52, Fixed for all devices) -->
-    <div id="sidebar" class="fixed inset-y-0 left-0 w-52 bg-white shadow-xl flex flex-col z-50 transform -translate-x-full sidebar-transition flex-shrink-0">
+    <div id="sidebar" onmouseleave="closeSidebarHover()" class="fixed inset-y-0 left-0 w-52 bg-white shadow-xl flex flex-col z-50 transform -translate-x-full sidebar-transition flex-shrink-0">
         
         <div class="p-4 flex justify-between items-center border-b bg-gray-50 h-14">
             <h1 class="font-bold text-gray-700 text-lg"><i class="fa-solid fa-link mr-2 text-blue-600"></i>Menus</h1>
-            <!-- Close button inside sidebar -->
             <button onclick="toggleSidebar()" class="text-gray-500 hover:text-red-500 text-lg focus:outline-none">
                 <i class="fa-solid fa-times"></i>
             </button>
@@ -116,11 +103,16 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col h-full relative w-full overflow-hidden">
-        <div class="h-14 bg-white shadow-sm flex items-center px-4 justify-between border-b z-30 flex-shrink-0">
+        
+        <div id="hover-trigger" class="fixed inset-y-0 left-0 w-8 z-40 hidden" onmouseenter="openSidebarHover()"></div>
+
+        <button id="floating-menu-btn" onclick="toggleSidebar()" class="hidden fixed top-4 left-4 z-40 w-10 h-10 bg-white/80 backdrop-blur-md shadow-md border border-gray-200 rounded text-gray-700 hover:text-blue-600 flex items-center justify-center transition-all">
+            <i class="fa-solid fa-bars text-lg"></i>
+        </button>
+
+        <div id="top-header" class="h-14 bg-white shadow-sm flex items-center px-4 justify-between border-b z-30 flex-shrink-0">
             <div class="flex items-center">
-                <!-- Universal Sidebar Toggle Button (Visible on all devices) -->
                 <button onclick="toggleSidebar()" class="mr-4 text-gray-700 hover:text-blue-600 text-xl px-2">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -132,64 +124,41 @@
         </div>
 
         <div class="flex-1 bg-gray-200 relative w-full h-full overflow-hidden">
-            <!-- Updated iframe with Zoom logic: Scale 0.8 (80%) and Width/Height 125% to compensate -->
             <iframe id="content-frame" class="border-0" style="width: 125%; height: 125%; transform: scale(0.8); transform-origin: 0 0;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation allow-downloads allow-popups-to-escape-sandbox"></iframe>
             
-            <!-- OFFICE WORKER ANIMATION WELCOME MESSAGE -->
             <div id="welcome-msg" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                
-                <!-- SVG Container for Office Scene -->
                 <div class="relative w-64 h-64 mb-4">
                     <svg viewBox="0 0 100 100" class="w-full h-full overflow-visible">
-                        <!-- Desk -->
-                        <rect x="10" y="65" width="80" height="5" fill="#8B4513" rx="1" /> <!-- Table Top -->
-                        <rect x="15" y="70" width="5" height="25" fill="#5D4037" /> <!-- Leg L -->
-                        <rect x="80" y="70" width="5" height="25" fill="#5D4037" /> <!-- Leg R -->
-
-                        <!-- Stacks of Files (Left) -->
+                        <rect x="10" y="65" width="80" height="5" fill="#8B4513" rx="1" />
+                        <rect x="15" y="70" width="5" height="25" fill="#5D4037" />
+                        <rect x="80" y="70" width="5" height="25" fill="#5D4037" />
                         <rect x="12" y="55" width="15" height="10" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="0.5" />
                         <line x1="12" y1="58" x2="27" y2="58" stroke="#9CA3AF" stroke-width="0.5" />
                         <line x1="12" y1="61" x2="27" y2="61" stroke="#9CA3AF" stroke-width="0.5" />
-                        
-                        <!-- Stacks of Files (Right) -->
                         <rect x="75" y="50" width="12" height="15" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="0.5" />
                         <line x1="75" y1="55" x2="87" y2="55" stroke="#9CA3AF" stroke-width="0.5" />
                         <line x1="75" y1="60" x2="87" y2="60" stroke="#9CA3AF" stroke-width="0.5" />
-
-                        <!-- Computer -->
-                        <rect x="60" y="40" width="2" height="25" fill="#374151" /> <!-- Stand -->
-                        <rect x="58" y="62" width="6" height="3" fill="#374151" /> <!-- Base -->
-                        <rect x="55" y="35" width="25" height="18" fill="#111827" rx="1" /> <!-- Monitor Back -->
-                        <rect x="56" y="36" width="23" height="16" fill="#60A5FA" opacity="0.8" /> <!-- Screen -->
-
-                        <!-- Character (Worker) -->
+                        <rect x="60" y="40" width="2" height="25" fill="#374151" />
+                        <rect x="58" y="62" width="6" height="3" fill="#374151" />
+                        <rect x="55" y="35" width="25" height="18" fill="#111827" rx="1" />
+                        <rect x="56" y="36" width="23" height="16" fill="#60A5FA" opacity="0.8" />
                         <g id="worker">
-                            <!-- Body -->
                             <path d="M35 65 L35 50 Q35 40 45 40 L55 40 Q65 40 65 50 L65 65" fill="#4B5563" />
-                            
-                            <!-- Head Group -->
                             <g class="worker-head">
-                                <circle cx="50" cy="35" r="10" fill="#FCA5A5" /> <!-- Face -->
-                                <path d="M40 32 Q50 25 60 32" fill="#1F2937" /> <!-- Hair -->
-                                <!-- Eyes (Animated) -->
+                                <circle cx="50" cy="35" r="10" fill="#FCA5A5" />
+                                <path d="M40 32 Q50 25 60 32" fill="#1F2937" />
                                 <ellipse class="worker-eye" cx="46" cy="35" rx="1.5" ry="1.5" fill="#1F2937" />
                                 <ellipse class="worker-eye" cx="54" cy="35" rx="1.5" ry="1.5" fill="#1F2937" />
                             </g>
-
-                            <!-- Arm (Typing/Tired) -->
                             <path class="worker-arm" d="M45 45 Q35 55 50 62" stroke="#FCA5A5" stroke-width="4" fill="none" stroke-linecap="round" />
                         </g>
-
-                        <!-- Zzz Text (Sleep) -->
                         <g class="worker-zzz">
                             <text x="60" y="25" font-family="sans-serif" font-size="8" fill="#6B7280" font-weight="bold">Z</text>
                             <text x="65" y="20" font-family="sans-serif" font-size="6" fill="#6B7280" font-weight="bold">z</text>
                             <text x="70" y="16" font-family="sans-serif" font-size="4" fill="#6B7280" font-weight="bold">z</text>
                         </g>
-
                     </svg>
                 </div>
-                
                 <div class="mt-4 text-center px-4">
                     <h2 class="text-xl md:text-2xl font-bold text-gray-600 mb-2 tracking-tight">Work Hard, Play Hard!</h2>
                     <p class="text-gray-500 font-medium">Select a file from the menu to start working</p>
@@ -198,7 +167,6 @@
         </div>
     </div>
 
-    <!-- ADD/EDIT FORM MODAL -->
     <div id="form-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md animate-fade-in">
             <div class="px-6 py-4 bg-blue-600 text-white flex justify-between items-center rounded-t-xl">
@@ -227,7 +195,6 @@
         </div>
     </div>
 
-    <!-- MANAGE MODAL -->
     <div id="manage-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm h-[80vh] flex flex-col animate-fade-in">
             <div class="px-5 py-4 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
@@ -238,7 +205,6 @@
         </div>
     </div>
 
-    <!-- GLOBAL LOADER -->
     <div id="global-loader" class="fixed inset-0 bg-black bg-opacity-40 hidden z-[100] flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3">
             <div class="loader w-6 h-6 border-2"></div>
@@ -246,43 +212,29 @@
         </div>
     </div>
 
-    <!-- NEW CUSTOM DIALOG (Alerts & Confirmations) -->
     <div id="custom-dialog" class="fixed inset-0 bg-black bg-opacity-60 hidden z-[110] flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-xs text-center animate-fade-in overflow-hidden">
             <div class="p-6">
-                <!-- Icon Area -->
-                <div id="dialog-icon-container" class="mb-4">
-                    <!-- Icon will be injected here via JS -->
-                </div>
-                
-                <!-- Message -->
+                <div id="dialog-icon-container" class="mb-4"></div>
                 <h3 id="dialog-title" class="text-lg font-bold text-gray-800 mb-2"></h3>
                 <p id="dialog-message" class="text-gray-600 text-sm mb-6"></p>
-
-                <!-- Buttons -->
-                <div id="dialog-buttons" class="flex justify-center gap-3">
-                    <!-- Buttons injected via JS -->
-                </div>
+                <div id="dialog-buttons" class="flex justify-center gap-3"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // ******************************************************
-        // এখানে আপনার নতুন ডিপ্লয়মেন্টের URL দিন
-        // ******************************************************
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqM-2jXnHzJeaot6GgSiUyEg5dmBSO6bKUPly777zNPjst4v6Ujp4Ia-BX2NBTaJ1n3g/exec"; 
         
         let allMenus = [];
         let isEditMode = false;
         let confirmCallback = null;
+        let isFullscreenMode = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchMenus();
         });
 
-        // --- CUSTOM DIALOG SYSTEM ---
-        
         function showDialog(type, message, callback = null) {
             const dialog = document.getElementById('custom-dialog');
             const iconContainer = document.getElementById('dialog-icon-container');
@@ -291,7 +243,7 @@
             const btnContainer = document.getElementById('dialog-buttons');
 
             dialog.classList.remove('hidden');
-            btnContainer.innerHTML = ''; // Clear previous buttons
+            btnContainer.innerHTML = ''; 
 
             if (type === 'success') {
                 iconContainer.innerHTML = '<div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-500"><i class="fa-solid fa-check text-2xl"></i></div>';
@@ -342,8 +294,6 @@
             document.getElementById('custom-dialog').classList.add('hidden');
         }
 
-        // --- API & DATA HANDLING ---
-
         function fetchMenus() {
             const listContainer = document.getElementById('menu-list');
             if(allMenus.length === 0) listContainer.innerHTML = '<div class="flex justify-center mt-10"><div class="loader"></div></div>';
@@ -391,13 +341,11 @@
             })
             .catch(err => {
                 showLoader(false);
-                console.error("Fetch Error (might be CORS):", err);
+                console.error("Fetch Error:", err);
                 showDialog('error', "Request might have failed. Refreshing data...");
                 setTimeout(() => fetchMenus(), 1500);
             });
         }
-
-        // --- RENDERING ---
 
         function renderSidebar(menus) {
             const container = document.getElementById('menu-list');
@@ -415,10 +363,7 @@
                 const div = document.createElement('div');
                 div.className = 'flex items-center p-2.5 mx-2 rounded-lg hover:bg-blue-50 cursor-pointer transition group';
                 div.onclick = () => {
-                    // ** UPDATED LOGIC FOR ALL DEVICES **
-                    // Close sidebar automatically when a menu item is clicked
                     toggleSidebar();
-                    
                     loadContent(cleanLink, menu.name, isExternal);
                 };
                 
@@ -473,8 +418,6 @@
             });
         }
 
-        // --- ACTIONS ---
-
         function loadContent(url, name, isExternal) {
             document.getElementById('welcome-msg').style.display = 'none';
             document.getElementById('current-page-title').innerText = name;
@@ -488,6 +431,29 @@
             } else {
                 extBtn.classList.add('hidden');
                 document.getElementById('content-frame').src = url;
+                
+                // Hide header and enable triggers
+                document.getElementById('top-header').style.display = 'none';
+                isFullscreenMode = true;
+                
+                if (window.innerWidth >= 768) {
+                    document.getElementById('hover-trigger').classList.remove('hidden');
+                } else {
+                    document.getElementById('floating-menu-btn').classList.remove('hidden');
+                }
+            }
+        }
+
+        // New functions for Desktop Hover effect
+        function openSidebarHover() {
+            if(isFullscreenMode && window.innerWidth >= 768) {
+                document.getElementById('sidebar').classList.remove('-translate-x-full');
+            }
+        }
+
+        function closeSidebarHover() {
+            if(isFullscreenMode && window.innerWidth >= 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
             }
         }
 
@@ -521,8 +487,6 @@
                 sendData(payload, "Deleted!");
             });
         }
-
-        // --- UI TOGGLES ---
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -588,16 +552,11 @@
             else loader.classList.add('hidden');
         }
 
-        // Close Popups on Outside Click
         window.onclick = function(event) {
             const setMenu = document.getElementById('settings-popup');
             const setBtn = document.querySelector('button[title="Settings"]');
             if (!setMenu.classList.contains('hidden') && !setMenu.contains(event.target) && !setBtn.contains(event.target)) {
                 setMenu.classList.add('hidden');
-            }
-            const dialog = document.getElementById('custom-dialog');
-            if (!dialog.classList.contains('hidden') && event.target === dialog) {
-                 // Optional: close on outside click
             }
         }
     </script>
