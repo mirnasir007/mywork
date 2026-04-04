@@ -231,6 +231,15 @@
         let confirmCallback = null;
         let isFullscreenMode = false;
 
+        // Restore URL immediately on page load before fetching data to prevent flickering
+        let pendingRedirectPath = window.location.pathname;
+        if (sessionStorage.redirect) {
+            const redirectUrl = sessionStorage.redirect;
+            delete sessionStorage.redirect;
+            window.history.replaceState(null, null, redirectUrl);
+            pendingRedirectPath = new URL(redirectUrl).pathname;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetchMenus();
         });
@@ -321,22 +330,13 @@
 
         // NEW: Handle Clean URL Redirects (404 Trick)
         function handleCleanUrlRedirect() {
-            let pathName = window.location.pathname;
+            // Extract path part like "sales-report" using the immediately restored path
+            const pathParts = pendingRedirectPath.split('/').filter(p => p);
             
-            // If user came from 404.html, restore the clean URL
-            if (sessionStorage.redirect) {
-                const redirectUrl = sessionStorage.redirect;
-                delete sessionStorage.redirect;
-                window.history.replaceState(null, null, redirectUrl);
-                pathName = new URL(redirectUrl).pathname;
-            }
-
-            // Extract path part like "sales-report"
-            const pathParts = pathName.split('/').filter(p => p);
+            // Get the last segment to support any base path dynamically
+            const targetPath = pathParts[pathParts.length - 1]; 
             
-            if (pathParts.length > 1 && pathParts[0] === 'mywork') {
-                const targetPath = pathParts[1]; 
-                
+            if (targetPath && targetPath !== 'mywork') {
                 // Find correct menu from allMenus
                 const targetMenu = allMenus.find(m => m.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === targetPath);
                 
