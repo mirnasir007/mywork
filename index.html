@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#ffffff">
     <title>My Work </title>
     
-    <link rel="manifest" href='data:application/manifest+json,{"name":"My Work","short_name":"My Work","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#ffffff","icons":[{"src":"https://mirnasir007.github.io/mywork/logo.png","sizes":"192x192","type":"image/png"},{"src":"https://mirnasir007.github.io/mywork/logo.png","sizes":"512x512","type":"image/png"}]}'>
+    <link rel="manifest" href="manifest.json">
     
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="apple-touch-icon" href="logo.png">
@@ -610,6 +610,14 @@
             if (!setMenu.classList.contains('hidden') && !setMenu.contains(event.target) && !setBtn.contains(event.target)) {
                 setMenu.classList.add('hidden');
             }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => {
+                    console.log('Service worker registration failed', err);
+                });
+            });
         }
     </script>
 </body>
